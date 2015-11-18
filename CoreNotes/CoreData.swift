@@ -16,7 +16,7 @@ extension NSManagedObject {
         
         guard let _appDelegate = _appDelegate else { return nil }
         
-        guard let entity = NSEntityDescription.entityForName("Category", inManagedObjectContext: _appDelegate.managedObjectContext) else { return nil }
+        guard let entity = NSEntityDescription.entityForName(name, inManagedObjectContext: _appDelegate.managedObjectContext) else { return nil }
         
         return (_appDelegate.managedObjectContext,entity)
         
@@ -34,14 +34,8 @@ class Category: NSManagedObject {
         
     }
     
-    var name = valueForKey("name") as? String
-    
-    var text: String? {
-        
-        get { return valueForKey("name") as? String }
-        set { setValue(newValue, forKey: "name") }
-        
-    }
+    @NSManaged var name: String?
+    @NSManaged var color: UIColor?
     
 }
 
@@ -55,21 +49,10 @@ class Note: NSManagedObject {
 
     }
     
-    var text: String? {
-        
-        get { return valueForKey("text") as? String }
-        set { setValue(newValue, forKey: "text") }
-        
-    }
+    @NSManaged var text: String?
+    @NSManaged var category: NSManagedObject?
+    @NSManaged var createdAt: NSDate?
     
-    var category: NSManagedObject? {
-        
-        get { return valueForKey("category") as? NSManagedObject }
-        set { setValue(newValue, forKey: "category") }
-    
-    }
-
-        
 }
 
 
@@ -138,6 +121,8 @@ extension NewNoteVC: Fetchable  {
         let newNote = Note.note()
         newNote?.text = noteTextView.text
         newNote?.category = categories[categoryPicker.selectedRowInComponent(0)]
+        newNote?.createdAt = NSDate()
+        
         
         _appDelegate?.saveContext()
     }
@@ -149,6 +134,7 @@ extension NewCategoryVC {
         
         let newCategory = Category.category()
         newCategory?.name = categoryNameField.text
+        newCategory?.color = UIColor.green()
         
         _appDelegate?.saveContext()
         
@@ -166,6 +152,8 @@ extension Fetchable {
         //fetch categories
         
         let request = NSFetchRequest(entityName: name)
+        
+        request.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: predicates ?? []) 
         
         //do something with predicates latet
         
